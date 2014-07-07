@@ -1,9 +1,75 @@
-<!DOCTYPE html>
 <html>
-<head>
-</head>
+  <head>
+    <script src="https://apis.google.com/js/client.js"></script>
+    <script>
+      function auth() {
+        var config = {
+          'client_id': '823618323534-124pu7sujfj5olv94rkr0apqdppc6nti.apps.googleusercontent.com',
+          'scope': 'https://www.googleapis.com/auth/gmail.compose'
+        };
 
-<body>
-	<h1>Hello</h1>
-</body>
+        gapi.auth.authorize(config, function() {
+          console.log('login complete');
+          console.log(gapi.auth.getToken());
+          document.getElementById("mailform").style.display = "block"
+          load();
+        });
+      }
+      function load () {
+      	gapi.client.load('gmail', 'v1', makeRequest);
+      }
+      function makeRequest () {
+      	console.log("gmail loaded")
+      }
+      function send() {
+      	var to = document.getElementsByName("to")[0].value,
+      		subject = document.getElementsByName("subject")[0].value,
+      		content = document.getElementsByName("content")[0].value
+
+      	var email = //"From: 'Sender Name' <sender@example.com>\r\n"+
+            "To:  <"+ to +">\r\n"+
+            "Subject: "+subject+"\r\n"+
+            "\r\n"+
+            content;
+        sendMessage(email, function () {
+        	alert("send email ok.");
+        });
+        event.preventDefault();
+        return false;
+      }
+      /**
+	   * Send Message.
+	   *
+	   * @param  {String} userId User's email address. The special value 'me'
+	   * can be used to indicate the authenticated user.
+	   * @param  {String} email RFC 5322 formatted String.
+	   * @param  {Function} callback Function to call when the request is complete.
+	   */
+      function sendMessage(email, callback) {
+	    var base64EncodedEmail = btoa(email);
+	    var request = gapi.client.gmail.users.messages.send({
+	      'userId': 'me',
+	      'message': {
+	        'raw': base64EncodedEmail
+	      }
+	    });
+	    request.execute(callback);
+	  }
+    </script>
+  </head>
+
+  <body onload="auth()">
+    <form id="mailform" style="display:none">
+    	<label>To</label>
+    	<input name="to" type="email" value="znlswd@gmail.com">
+    	<br>
+    	<label>Subject</label>
+    	<input name="subject" type="text" value="Test Gmail">
+    	<br>
+    	<label>Content</label>
+    	<textarea name="content">This is a test email.</textarea>
+    	<br>
+    	<input type="submit" onclick="send()">
+    </form>
+  </body>
 </html>
